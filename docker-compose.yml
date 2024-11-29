@@ -1,0 +1,24 @@
+version: '3.7'
+
+services:
+  db:
+    image: mongo
+    container_name: data-pipeline-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    environment:
+      - MONGO_URI=mongodb://db:27017/mydatabase
+    volumes:
+      - .:/usr/src/app
+      - "/usr/src/app/node_modules"
+
+volumes:
+  mongodb_data:
