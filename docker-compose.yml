@@ -8,6 +8,12 @@ services:
       - "27017:27017"
     volumes:
       - mongodb_data:/data/db
+      - "./data.csv:/home/data.csv"
+    command: >
+      bash -c "
+      mongod --fork --logpath /var/log/mongodb.log &&
+      mongoimport --db mydatabase --collection data_collection --type csv --file /home/data.csv --headerline &&
+      tail -f /dev/null"
   app:
     build: .
     ports:
