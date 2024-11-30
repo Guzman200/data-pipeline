@@ -1,34 +1,41 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { WifiAccessPointsService } from './wifi-access-points.service';
-import { CreateWifiAccessPointDto } from './dto/create-wifi-access-point.dto';
-import { UpdateWifiAccessPointDto } from './dto/update-wifi-access-point.dto';
 
 @Controller('wifi-access-points')
 export class WifiAccessPointsController {
+
   constructor(private readonly wifiAccessPointsService: WifiAccessPointsService) {}
 
-  @Post()
-  create(@Body() createWifiAccessPointDto: CreateWifiAccessPointDto) {
-    return this.wifiAccessPointsService.create(createWifiAccessPointDto);
-  }
-
   @Get()
-  findAll() {
-    return this.wifiAccessPointsService.findAll();
+  async getAll(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ) {
+    return this.wifiAccessPointsService.findAll(page, limit);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.wifiAccessPointsService.findOne(+id);
+  async getById(@Param('id') id: string) {
+    return this.wifiAccessPointsService.findById(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateWifiAccessPointDto: UpdateWifiAccessPointDto) {
-    return this.wifiAccessPointsService.update(+id, updateWifiAccessPointDto);
+  @Get('colonia')
+  async getByColonia(
+    @Query('colonia') colonia: string,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ) {
+    return this.wifiAccessPointsService.findByColonia(colonia, page, limit);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.wifiAccessPointsService.remove(+id);
+  @Get('nearby')
+  async getNearby(
+    @Query('lat') lat: number,
+    @Query('long') long: number,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ) {
+    return this.wifiAccessPointsService.findNearby(lat, long, page, limit);
   }
+  
 }

@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
-@Schema({ collection : 'data_collection'})
+@Schema({ collection : 'wifi_access_points'})
 export class WifiAccessPoint {
 
     @Prop({ required: true })
@@ -23,6 +23,19 @@ export class WifiAccessPoint {
 
     @Prop({ required: true })
     alcaldia: string;
+
+    /*
+
+    @Prop({ type: { type: String, default: 'Point' }})
+    type: string;
+
+    @Prop({})
+    coordinates: [number];
+    */
 }
 
+
+
 export const WifiAccessPointSchema = SchemaFactory.createForClass(WifiAccessPoint);
+
+WifiAccessPointSchema.index({ location: '2dsphere' });

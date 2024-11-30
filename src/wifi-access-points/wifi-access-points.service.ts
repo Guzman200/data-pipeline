@@ -1,26 +1,59 @@
 import { Injectable } from '@nestjs/common';
-import { CreateWifiAccessPointDto } from './dto/create-wifi-access-point.dto';
-import { UpdateWifiAccessPointDto } from './dto/update-wifi-access-point.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { WifiAccessPoint } from './entities/wifi-access-point.entity';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class WifiAccessPointsService {
-  create(createWifiAccessPointDto: CreateWifiAccessPointDto) {
-    return 'This action adds a new wifiAccessPoint';
+
+  constructor(
+    @InjectModel(WifiAccessPoint.name) private readonly wifiAccessPointModel: Model<WifiAccessPoint>
+  ) {
+    //
   }
 
-  findAll() {
-    return `This action returns all wifiAccessPoints`;
+  async findAll(page: number, limit: number) {
+
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await Promise.all([
+      this.wifiAccessPointModel.find()
+				.skip(skip).limit(limit).exec(),
+      this.wifiAccessPointModel.countDocuments().exec()
+    ]);
+
+    return { data, total, page, limit };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} wifiAccessPoint`;
+  async findById(id: string) {
+    return this.wifiAccessPointModel.findOne({
+      id : id
+    }).exec();
   }
 
-  update(id: number, updateWifiAccessPointDto: UpdateWifiAccessPointDto) {
-    return `This action updates a #${id} wifiAccessPoint`;
+  async findByColonia(colonia: string, page: number, limit: number) {
+    const skip = (page - 1) * limit;
+    return this.wifiAccessPointModel
+      .find({ colonia })
+      .skip(skip)
+      .limit(limit);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} wifiAccessPoint`;
+  async findNearby(lat: number, long: number, page: number, limit: number) {
+    const skip = (page - 1) * limit;
+    return this.wifiAccessPointModel
+      .find({
+        location: {
+          $near: {
+            $geometry: {
+              type: 'Point',
+              coordinates: [long, lat],
+            },
+            $maxDistance: 5000, // Opcional: Máxima distancia en metros
+          },
+        },
+      })
+      .skip(skip)
+      .limit(limit);
   }
 }
