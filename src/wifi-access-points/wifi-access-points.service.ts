@@ -33,10 +33,18 @@ export class WifiAccessPointsService {
 
   async findByColonia(colonia: string, page: number, limit: number) {
     const skip = (page - 1) * limit;
-    return this.wifiAccessPointModel
-      .find({ colonia })
-      .skip(skip)
-      .limit(limit);
+
+    const [data, total] = await Promise.all([
+      this.wifiAccessPointModel.find({
+        colonia: { $regex: colonia, $options: 'i' }
+      })
+				.skip(skip).limit(limit).exec(),
+      this.wifiAccessPointModel.find({
+        colonia: { $regex: colonia, $options: 'i' }
+      }).countDocuments().exec()
+    ]);
+
+    return { data, total, page, limit };
   }
 
   async findNearby(lat: number, long: number, page: number, limit: number) {
