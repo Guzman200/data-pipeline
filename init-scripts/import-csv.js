@@ -35,7 +35,11 @@ async function importCSV() {
         latitud: parseFloat(latitud), 
         longitud: parseFloat(longitud),
         colonia: colonia, 
-        alcaldia: alcaldia 
+        alcaldia: alcaldia,
+        location: {
+          type: 'Point',
+          coordinates: [parseFloat(longitud), parseFloat(latitud)] // [longitud, latitud] orden obligatorio
+        }
       };
     });
 

@@ -24,6 +24,17 @@ export class WifiAccessPointsController {
     return await this.wifiAccessPointsService.findByColonia(colonia, page, limit);
   }
 
+  @Get('nearby')
+  async getNearby(
+    @Query('lat') lat: string,
+    @Query('long') long: string,
+    @Query('max_distance') max_distance: string = "500",
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ) {
+    return await this.wifiAccessPointsService.findNearby(lat, long, page, limit, max_distance);
+  }
+
   @Get(':id')
   async getById(@Param('id') id: string) {
     const result = await this.wifiAccessPointsService.findById(id);
@@ -33,16 +44,6 @@ export class WifiAccessPointsController {
     }
   
     return result;
-  }
-
-  @Get('nearby')
-  async getNearby(
-    @Query('lat') lat: number,
-    @Query('long') long: number,
-    @Query('page') page: number = 1,
-    @Query('limit') limit: number = 10,
-  ) {
-    return this.wifiAccessPointsService.findNearby(lat, long, page, limit);
   }
   
 }

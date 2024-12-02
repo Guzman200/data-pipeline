@@ -47,21 +47,40 @@ export class WifiAccessPointsService {
     return { data, total, page, limit };
   }
 
-  async findNearby(lat: number, long: number, page: number, limit: number) {
+  async findNearby(latitud: string, longitud: string, page: number, limit: number, max_distance : string) {
+
     const skip = (page - 1) * limit;
-    return this.wifiAccessPointModel
-      .find({
-        location: {
-          $near: {
-            $geometry: {
-              type: 'Point',
-              coordinates: [long, lat],
-            },
-            $maxDistance: 5000, // Opcional: Máxima distancia en metros
-          },
+
+    const long = parseFloat(longitud);
+    const lat = parseFloat(latitud);
+    const maxDistance = parseInt(max_distance)
+
+    const data = await this.wifiAccessPointModel.aggregate([
+      {
+        $geoNear: {
+          near: { type: 'Point', coordinates: [long, lat] }, // Coordenadas de referencia
+          distanceField: 'distance', // El campo donde se almacenará la distancia calculada
+          spherical: true, // Usamos coordenadas esféricas para calcular la distancia
+          maxDistance: maxDistance, // Filtro para la distancia máxima en metros
         },
-      })
-      .skip(skip)
-      .limit(limit);
+      },
+      { $skip: skip },
+      { $limit: limit }, 
+    ]);
+    
+    // Contar los resultados
+    const total = await this.wifiAccessPointModel.aggregate([
+      {
+        $geoNear: {
+          near: { type: 'Point', coordinates: [long, lat] }, // Coordenadas de referencia
+          distanceField: 'distance', // El campo donde se almacenará la distancia calculada
+          spherical: true, // Usamos coordenadas esféricas para calcular la distancia
+          maxDistance: maxDistance, // Filtro para la distancia máxima en metros
+        },
+      },
+      { $count: 'total' } 
+    ]);
+    
+    return { data, total: total[0]?.total || 0, limit, page}
   }
 }

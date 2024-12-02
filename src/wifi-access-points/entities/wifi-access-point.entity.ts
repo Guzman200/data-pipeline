@@ -24,18 +24,24 @@ export class WifiAccessPoint {
     @Prop({ required: true })
     alcaldia: string;
 
-    /*
+    @Prop({
+        type: {
+          type: String,
+          enum: ['Point'], // GeoJSON type
+          required: true,
+        },
+        coordinates: { type: [Number], required: true }, // [longitud, latitud] orden obligatorio
+    })
+    location: {
+        type: string;
+        coordinates: [number];
+    };
 
-    @Prop({ type: { type: String, default: 'Point' }})
-    type: string;
-
-    @Prop({})
-    coordinates: [number];
-    */
 }
 
 
 
 export const WifiAccessPointSchema = SchemaFactory.createForClass(WifiAccessPoint);
 
+// Creamos el índice geoespacial en el campo location
 WifiAccessPointSchema.index({ location: '2dsphere' });
