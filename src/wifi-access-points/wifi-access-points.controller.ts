@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, NotFoundException, Param, Query } from '@nestjs/common';
 import { WifiAccessPointsService } from './wifi-access-points.service';
 
 @Controller('wifi-access-points')
@@ -16,7 +16,13 @@ export class WifiAccessPointsController {
 
   @Get(':id')
   async getById(@Param('id') id: string) {
-    return this.wifiAccessPointsService.findById(id);
+    const result = await this.wifiAccessPointsService.findById(id);
+
+    if (!result) {
+      throw new NotFoundException(`Wifi Access Point con id ${id} no encontrado`);
+    }
+  
+    return result;
   }
 
   @Get('colonia')
