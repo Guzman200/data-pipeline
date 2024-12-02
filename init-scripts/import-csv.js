@@ -1,5 +1,4 @@
 const fs = require('fs');
-const path = require('path');
 const { MongoClient } = require('mongodb');
 
 const mongoUri = 'mongodb://localhost:27017';
@@ -24,8 +23,20 @@ async function importCSV() {
 
     // Convertimos CSV a JSON
     const records = csvData.split('\n').map(line => {
-      const [id, programa, fecha_instalacion, latitud, longitud, colonia, alcaldia] = line.split(','); 
-      return { id, programa, fecha_instalacion, latitud, longitud, colonia, alcaldia };
+
+      const cleanedLine = line.replace(/\r/g, '');
+  
+      const [id, programa, fecha_instalacion, latitud, longitud, colonia, alcaldia] = cleanedLine.split(','); 
+
+      return {
+        id, 
+        programa, 
+        fecha_instalacion, 
+        latitud: parseFloat(latitud), 
+        longitud: parseFloat(longitud),
+        colonia: colonia, 
+        alcaldia: alcaldia 
+      };
     });
 
     // Insertamos en MongoDB
