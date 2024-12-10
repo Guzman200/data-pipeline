@@ -67,7 +67,6 @@ async function importCSV() {
             }
 
             
-
             // Si alcanzamos el tamaño del lote, insertamos en la bd
             if (records.length >= batchSize) {
 
