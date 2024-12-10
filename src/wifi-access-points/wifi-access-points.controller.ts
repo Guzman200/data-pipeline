@@ -1,4 +1,4 @@
-import { Controller, Get, NotFoundException, Param, Query } from '@nestjs/common';
+import { BadRequestException, Controller, Get, NotFoundException, Param, Query } from '@nestjs/common';
 import { WifiAccessPointsService } from './wifi-access-points.service';
 
 @Controller('wifi-access-points')
@@ -28,10 +28,18 @@ export class WifiAccessPointsController {
         @Query('lat') lat: string,
         @Query('long') long: string,
         @Query('max_distance') max_distance: string = "500",
-        @Query('page') page: number = 1,
-        @Query('limit') limit: number = 10,
+        @Query('page') page: string = "1",
+        @Query('limit') limit: string = "10",
     ) {
-        return await this.wifiAccessPointsService.findNearby(lat, long, page, limit, max_distance);
+
+        const latitude  = parseFloat(lat);
+        const longitude = parseFloat(long);
+
+        if (isNaN(latitude) || isNaN(longitude)) {
+            throw new BadRequestException('Las coordenadas de latitud y longitud deben ser números válidos');
+        }
+
+        return await this.wifiAccessPointsService.findNearby(lat, long, parseInt(page), parseInt(limit), max_distance);
     }
 
     @Get(':id')

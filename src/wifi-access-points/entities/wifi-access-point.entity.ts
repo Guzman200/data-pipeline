@@ -39,8 +39,6 @@ export class WifiAccessPoint {
 
 }
 
-
-
 export const WifiAccessPointSchema = SchemaFactory.createForClass(WifiAccessPoint);
 
 // Creamos el índice geoespacial en el campo location
