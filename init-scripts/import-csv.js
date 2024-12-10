@@ -25,7 +25,7 @@ async function importCSV() {
         .pipe(csv.parse({ headers: false }))
         .on('data', async (row) => {
 
-            stream.pause(); // Pausamos el stream mientras procesamos
+            
 
             const [id, programa, fecha_instalacion, latitud, longitud, colonia, alcaldia] = row;
 
@@ -45,11 +45,15 @@ async function importCSV() {
 
             // Si alcanzamos el tamaño del lote, insertamos en la bd
             if (records.length >= batchSize) {
+
+                stream.pause(); // Pausamos el stream mientras procesamos
+
                 await collection.insertMany(records);
                 records = []; // Limpiamos el array para el sig lote
-            }
 
-            stream.resume(); // Reanudamos el stream mientras procesamos
+                stream.resume(); // Reanudamos el stream mientras procesamos
+            }
+            
 
         })
         .on('end', async () => {
