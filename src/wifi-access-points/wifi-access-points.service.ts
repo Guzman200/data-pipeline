@@ -27,7 +27,7 @@ export class WifiAccessPointsService {
 
   async findById(id: string) {
     return this.wifiAccessPointModel.findOne({
-      id : { $regex: id, $options : 'i'}
+      id : { $regex: `^${id}$`, $options : 'i'}
     }).exec();
   }
 
