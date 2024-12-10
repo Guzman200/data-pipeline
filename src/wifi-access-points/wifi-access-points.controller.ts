@@ -20,9 +20,6 @@ export class WifiAccessPointsController {
         @Query('page') page: number = 1,
         @Query('limit') limit: number = 10,
     ) {
-
-        console.log(typeof(page))
-
         return await this.wifiAccessPointsService.findByColonia(colonia, page, limit);
     }
 

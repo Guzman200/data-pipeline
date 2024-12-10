@@ -32,15 +32,16 @@ export class WifiAccessPointsService {
   }
 
   async findByColonia(colonia: string, page: number, limit: number) {
+
     const skip = (page - 1) * limit;
 
     const [data, total] = await Promise.all([
       this.wifiAccessPointModel.find({
-        colonia: { $regex: colonia, $options: 'i' }
+        colonia: { $regex: `^${colonia}$`, $options: 'i' }
       })
 				.skip(skip).limit(limit).exec(),
       this.wifiAccessPointModel.find({
-        colonia: { $regex: colonia, $options: 'i' }
+        colonia: { $regex: `^${colonia}$`, $options: 'i' }
       }).countDocuments().exec()
     ]);
 
