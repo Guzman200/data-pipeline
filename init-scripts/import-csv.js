@@ -1,5 +1,6 @@
 const fs = require('fs');
-const { MongoClient } = require('mongodb');
+const { MongoClient, ObjectId } = require('mongodb');
+const csv = require('fast-csv');
 
 const mongoUri = 'mongodb://localhost:27017';
 const dbName = 'nestdb';
@@ -8,9 +9,6 @@ const csvFilePath = './init-scripts/data.csv';
 
 async function importCSV() {
 
-  try {
-
-    // Nos conectamos a MongoDB
     const client = new MongoClient(mongoUri);
     await client.connect();
     const db = client.db(dbName);
@@ -18,41 +16,56 @@ async function importCSV() {
 
     console.log(`Conectado a MongoDB. Importando datos en ${collectionName}...`);
 
-    // Leemos el archivo CSV
-    const csvData = fs.readFileSync(csvFilePath, 'utf8');
+    let records = [];
+    let batchSize = 5000; // Número de registros por lote
 
-    // Convertimos CSV a JSON
-    const records = csvData.split('\n').map(line => {
+    return new Promise((resolve, reject) => {
 
-      const cleanedLine = line.replace(/\r/g, '');
-  
-      const [id, programa, fecha_instalacion, latitud, longitud, colonia, alcaldia] = cleanedLine.split(','); 
+        const stream = fs.createReadStream(csvFilePath)
+        .pipe(csv.parse({ headers: false }))
+        .on('data', async (row) => {
 
-      return {
-        id, 
-        programa, 
-        fecha_instalacion, 
-        latitud: parseFloat(latitud), 
-        longitud: parseFloat(longitud),
-        colonia: colonia, 
-        alcaldia: alcaldia,
-        location: {
-          type: 'Point',
-          coordinates: [parseFloat(longitud), parseFloat(latitud)] // [longitud, latitud] orden obligatorio
-        }
-      };
+            stream.pause(); // Pausamos el stream mientras procesamos
+
+            const [id, programa, fecha_instalacion, latitud, longitud, colonia, alcaldia] = row;
+
+            records.push({
+                id,
+                programa,
+                fecha_instalacion,
+                latitud: parseFloat(latitud),
+                longitud: parseFloat(longitud),
+                colonia,
+                alcaldia,
+                location: {
+                    type: 'Point',
+                    coordinates: [parseFloat(longitud), parseFloat(latitud)],
+                }
+            });
+
+            // Si alcanzamos el tamaño del lote, insertamos en la bd
+            if (records.length >= batchSize) {
+                await collection.insertMany(records);
+                records = []; // Limpiamos el array para el sig lote
+            }
+
+            stream.resume(); // Reanudamos el stream mientras procesamos
+
+        })
+        .on('end', async () => {
+
+            // Insertamos el último lote si hay registros restantes
+            if (records.length > 0) {
+            await collection.insertMany(records);
+            }
+            console.info('Importación completada.');
+            resolve();
+        })
+        .on('error', (error) => {
+            console.error('Error al leer el archivo CSV:', error);
+            reject(error);
+        });
     });
-
-    // Insertamos en MongoDB
-    const result = await collection.insertMany(records);
-
-    console.log(`Importados ${result.insertedCount} registros.`);
-
-  } catch (err) {
-    console.error('Error al importar CSV:', err);
-  } finally {
-    process.exit(0); // Nos aseguramos que el proceso termine
-  }
 }
 
-importCSV();
+importCSV().then(() => process.exit(0)).catch(console.error);
